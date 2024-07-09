@@ -1,28 +1,39 @@
 'use client'
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Navbar.css';
-import { signInWithGoogle, signOutUser } from '@/config/firebase_auth';
-import { auth } from "@/config/firebase_auth";
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { UserAuth } from '@/contexts/auth_context';
 
 const Navbar = () => {
-  const [user] = useAuthState(auth);
+  const { user, GoogleSignIn, SignOut, loadingUser } = UserAuth();
+  // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
+  const handleSignIn = async () => {
+    try {
+      GoogleSignIn();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      SignOut();
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   return (
     <div className='nav'>
       <div className='nav-logo'>
         Pantry-Tracker
       </div>
-      {user ? (
-        <button onClick={signOutUser} className="bg-red-500 text-white px-4 py-2 rounded">
+      {loadingUser ? (null) : user ? (
+        <button onClick={handleSignOut} className="bg-red-500 text-white px-4 py-2 rounded">
           Sign Out
         </button>
       ) : (
-        <button onClick={signInWithGoogle} className="bg-blue-500 text-white px-4 py-2 rounded">
+        <button onClick={handleSignIn} className="bg-blue-500 text-white px-4 py-2 rounded">
           Sign In with Google
         </button>
       )}
