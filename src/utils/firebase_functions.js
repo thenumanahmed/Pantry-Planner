@@ -1,4 +1,4 @@
-import { db } from "../config/firebase"; // Assuming db is initialized Firebase Firestore instance
+import { db } from "../config/firebase"; 
 import {
   collection,
   addDoc,
