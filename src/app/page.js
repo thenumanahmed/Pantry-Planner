@@ -5,19 +5,38 @@ import {
   editProduct,
   deleteProduct,
   getProducts,
+  decrementProductQuantity,
+  incrementProductQuantity,
 } from "../utils/firebase_functions";
 import { auth } from "./../config/firebase";
 import { UserAuth } from "@/contexts/auth_context";
 import Table from "@/components/Table/Table";
+import Grid from "@/components/Grid/Grid";
+import AddItemModal from "@/components/Modal/AddProductModal";
+import EditItemModal from "@/components/Modal/EditProductModal";
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [newProductName, setNewProductName] = useState("");
-  const [newQuantity, setNewQuantity] = useState(1);
-  const [newExpiryDate, setNewExpiryDate] = useState("");
-  const [editingProductId, setEditingProductId] = useState(null);
-  const [addingProduct, setAddingProduct] = useState(false);
   const { user } = UserAuth();
+  const [products, setProducts] = useState([]);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
+  // for editing new product
+  const [editingProductName, setEditingProductName] = useState("");
+  const [editingproductId, setEditingProductId] = useState("");
+  const [editingProductExpDate, setEditingProductExpDate] = useState("");
+  const [editingProductQuantity, setEditingProductQuantity] = useState("");
+
+  // for adding new product
+  const [newProductName, setNewProductName] = useState("");
+  const [newQuantity, setNewQuantity] = useState("");
+  const [newExpiryDate, setNewExpiryDate] = useState("");
+
+  const closeAddItemModal = () => setShowAddProductModal(false);
+  const closeEditItemModal = () => setShowEditProductModal(false);
+  const openAddItemModal = () => setShowAddProductModal(true);
+  const openEditItemModal = () => setShowEditProductModal(true);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -31,256 +50,139 @@ export default function Home() {
     fetchProducts();
   }, [user, addProduct]);
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-    setAddingProduct(true);
+  const handleAddProduct = async () => {
     const user = auth.currentUser;
     if (user && newProductName.trim() && newExpiryDate.trim()) {
-      await addProduct(newProductName, newQuantity, newExpiryDate, user.uid);
-      console.log(user.uid);
+      const newItem = {
+        name: newProductName,
+        quantity: newQuantity,
+        expiryDate: newExpiryDate,
+        userId: user.uid,
+      };
+      await addProduct(newItem);
       setNewProductName("");
-      setNewQuantity(1);
+      setNewQuantity("");
       setNewExpiryDate("");
       const updatedProducts = await getProducts(user.uid);
       setProducts(updatedProducts);
     }
-    setAddingProduct(false);
   };
 
-  const handleEditProduct = async (productId) => {
-    setAddingProduct(true);
-    const updatedProduct = {
-      name: newProductName,
-      quantity: newQuantity,
-      expiryDate: newExpiryDate,
-    };
+  const handleEditProduct = async (productId, updatedProduct) => {
+    // const updatedProduct = 
+    console.log(updatedProduct);
     await editProduct(productId, updatedProduct);
+
     setEditingProductId(null);
     const user = auth.currentUser;
     const updatedProducts = await getProducts(user.uid);
     setProducts(updatedProducts);
-    setAddingProduct(false);
   };
 
+
+  const handleIncrementProductQuantity = async (productId) => {
+    await incrementProductQuantity(productId);
+    const user = auth.currentUser;
+    const updatedProducts = await getProducts(user.uid);
+    setProducts(updatedProducts);
+  };
+  const handleDecrementProductQuantity = async (productId) => {
+    await decrementProductQuantity(productId);
+    const user = auth.currentUser;
+    const updatedProducts = await getProducts(user.uid);
+    setProducts(updatedProducts);
+  };
+
+  // updates ui but multiple clicks problem 
+  // const handleDecrementProductQuantity = async (productId) => {
+  //   // Optimistically update UI
+  //   setProducts((prevProducts) =>
+  //     prevProducts.map((product) =>
+  //       product.id === productId
+  //         ? { ...product, quantity: product.quantity - 1 }
+  //         : product
+  //     )
+  //   );
+  
+  //   try {
+  //     await decrementProductQuantity(productId);
+  
+  //     // Fetch updated products if needed (optional)
+  //     // const user = auth.currentUser;
+  //     // const updatedProducts = await getProducts(user.uid);
+  //     // setProducts(updatedProducts);
+  //   } catch (error) {
+  //     console.error("Failed to decrement quantity:", error);
+  
+  //     // Revert the optimistic update if something goes wrong
+  //     setProducts((prevProducts) =>
+  //       prevProducts.map((product) =>
+  //         product.id === productId
+  //           ? { ...product, quantity: product.quantity + 1 }
+  //           : product
+  //       )
+  //     );
+  //   }
+  // };
+  
+
   const handleDeleteProduct = async (productId) => {
-    setAddingProduct(true);
     await deleteProduct(productId);
     const user = auth.currentUser;
     const updatedProducts = await getProducts(user.uid);
     setProducts(updatedProducts);
-    setAddingProduct(false);
   };
 
   return (
-    // <main className="flex min-h-screen flex-col items-center justify-between p-24">
-    //   <h1 className="text-2xl mb-6">Pantry Products</h1>
-
-    //   <form onSubmit={handleAddProduct} className="mb-4">
-    //     <input
-    //       type="text"
-    //       value={newProductName}
-    //       onChange={(e) => setNewProductName(e.target.value)}
-    //       placeholder="Enter product name"
-    //       className="border px-4 py-2 rounded mr-2"
-    //     />
-    //     <input
-    //       type="number"
-    //       value={newQuantity}
-    //       onChange={(e) => setNewQuantity(e.target.value)}
-    //       placeholder="Enter quantity"
-    //       className="border px-4 py-2 rounded mr-2"
-    //     />
-    //     <input
-    //       type="date"
-    //       value={newExpiryDate}
-    //       onChange={(e) => setNewExpiryDate(e.target.value)}
-    //       className="border px-4 py-2 rounded mr-2"
-    //     />
-    //     <button
-    //       type="submit"
-    //       disabled={addingProduct} // Disable when addingProduct is true
-    //       className={`px-4 py-2 rounded text-white font-medium transition-colors
-    //           ${
-    //             addingProduct
-    //               ? "bg-gray-400 cursor-not-allowed"
-    //               : "bg-blue-500 hover:bg-blue-600"
-    //           }`}
-    //     >
-    //       {addingProduct ? "Adding..." : "Add Product"}
-    //     </button>
-    //   </form>
-
-    //   <ul>
-    //     {products.length > 0 ? (
-    //       products.map((product) => (
-    //         <li
-    //           key={product.id}
-    //           className="flex justify-between items-center mb-2"
-    //         >
-    //           {editingProductId === product.id ? (
-    //             <>
-    //               <input
-    //                 type="text"
-    //                 defaultValue={product.name}
-    //                 onChange={(e) => setNewProductName(e.target.value)}
-    //                 className="border px-4 py-2 rounded mr-2"
-    //               />
-    //               <input
-    //                 type="number"
-    //                 defaultValue={product.quantity}
-    //                 onChange={(e) => setNewQuantity(e.target.value)}
-    //                 className="border px-4 py-2 rounded mr-2"
-    //               />
-    //               <input
-    //                 type="date"
-    //                 defaultValue={product.expiryDate}
-    //                 onChange={(e) => setNewExpiryDate(e.target.value)}
-    //                 className="border px-4 py-2 rounded mr-2"
-    //               />
-    //               <button
-    //                 onClick={() => handleEditProduct(product.id)}
-    //                 className="bg-green-500 text-white px-4 py-2 rounded"
-    //               >
-    //                 Save
-    //               </button>
-    //             </>
-    //           ) : (
-    //             <>
-    //               <span>
-    //                 {product.name} - {product.quantity} - {product.expiryDate}
-    //               </span>
-    //               <button
-    //                 onClick={() => setEditingProductId(product.id)}
-    //                 className="text-white px-4 py-2 rounded mr-2"
-    //               >
-    //                 Edit
-    //               </button>
-    //               <button
-    //                 onClick={() => handleDeleteProduct(product.id)}
-    //                 className="text-white px-4 py-2 rounded"
-    //               >
-    //                 Delete
-    //               </button>
-    //             </>
-    //           )}
-    //         </li>
-    //       ))
-    //     ) : (
-    //       <li>No products found</li>
-    //     )}
-    //   </ul>
-    // </main>
-
-    <main className="block bg-slate-300 h-screen">
-      {/* when no item is added */}
-      {/* <div className="bg-blue-200 p-6 rounded-lg shadow-lg">
-        <div className="flex flex-col justify-center items-center">
-          <div> No Items Added.</div>
-          <div> Start tracking your pantry by adding them</div>
-          <br/>
-          <button>demo button to add</button>
-        </div>
-      </div> */}
-      <Table products={products} />
-
-      {/*         
-        <table className="min-w-full text-center">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Product</th>
-              <th className="px-4 py-2">Quantity</th>
-              <th className="px-4 py-2">Expiry Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border px-4 py-2">Applsdmdm,sme</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr>
-            <tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr><tr>
-              <td className="border px-4 py-2">Apple</td>
-              <td className="border px-4 py-2">5</td>
-              <td className="border px-4 py-2">2024-08-30</td>
-            </tr> 
-          </tbody>
-        </table> */}
+    <main className="block bg-slate-300 min-h-screen">
+      {/* / table for large screens */}
+      <Table
+        products={products}
+        handleIncrementProductQuantity={handleIncrementProductQuantity}
+        handleDecrementProductQuantity={handleDecrementProductQuantity}
+        openAddItemModal={openAddItemModal}
+        setEditingProductExpDate={setEditingProductExpDate}
+        setEditingProductName={setEditingProductName}
+        setEditingProductId={setEditingProductId}
+        setEditingProductQuantity={setEditingProductQuantity}
+        openEditItemModal={openEditItemModal}
+        handleDeleteProduct={handleDeleteProduct}
+      />
+      {/* / grid for med and small screens */}
+      <Grid
+        products={products}
+        openAddItemModal={openAddItemModal}
+        handleIncrementProductQuantity={handleIncrementProductQuantity}
+        handleDecrementProductQuantity={handleDecrementProductQuantity}
+        setEditingProductExpDate={setEditingProductExpDate}
+        setEditingProductName={setEditingProductName}
+        setEditingProductId={setEditingProductId}
+        setEditingProductQuantity={setEditingProductQuantity}
+        openEditItemModal={openEditItemModal}
+        handleDeleteProduct={handleDeleteProduct}
+      />
+      {showAddProductModal ? (
+        <AddItemModal
+          closeAddItemModal={closeAddItemModal}
+          handleAddProduct={handleAddProduct}
+          name={newProductName}
+          setName={setNewProductName}
+          quantity={newQuantity}
+          setQuantity={setNewQuantity}
+          expiryDate={newExpiryDate}
+          setExpiryDate={setNewExpiryDate}
+        />
+      ) : null}
+      {showEditProductModal ? (
+        <EditItemModal
+          closeEditItemModal={closeEditItemModal}
+          handleEditProduct={handleEditProduct}
+          oldName={editingProductName}
+          oldExpiryDate={editingProductExpDate}
+          oldQuantity={editingProductQuantity}
+          id={editingproductId}
+        />
+      ) : null}
     </main>
   );
 }

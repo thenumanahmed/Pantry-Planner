@@ -1,4 +1,4 @@
-import { db } from "../config/firebase"; 
+import { db } from "../config/firebase";
 import {
   collection,
   addDoc,
@@ -6,19 +6,29 @@ import {
   updateDoc,
   deleteDoc,
   query,
+  getDoc,
   where,
   getDocs,
 } from "firebase/firestore";
 
 // Add a product to the "products" collection
-export const addProduct = async (name, quantity, expiryDate, userId) => {
+export const addProduct = async ({ name, quantity, expiryDate, userId }) => {
+  console.log("adding");
   try {
+    // Convert quantity to an integer before adding it to the database
+    const parsedQuantity = parseInt(quantity, 10);
+
+    if (isNaN(parsedQuantity)) {
+      throw new Error("Invalid quantity: Not a number.");
+    }
+
     const docRef = await addDoc(collection(db, "products"), {
       name,
-      quantity,
+      quantity: parsedQuantity, // Storing the parsed quantity
       expiryDate,
       userId,
     });
+
     console.log("Product added with ID: ", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -51,7 +61,6 @@ export const deleteProduct = async (productId) => {
 // Get all products for a specific user
 export const getProducts = async (userId) => {
   try {
-    console.log(`GETTING DOC FOR ${userId}`);
     // Create a query to fetch products that belong to the specified user
     const productsQuery = query(
       collection(db, "products"),
@@ -68,5 +77,53 @@ export const getProducts = async (userId) => {
     return products;
   } catch (error) {
     console.error("Error getting products: ", error);
+  }
+};
+
+// Increment product quantity
+export const incrementProductQuantity = async (productId) => {
+  try {
+    const productDocRef = doc(db, "products", productId);
+
+    // Get the current quantity
+    const productSnapshot = await getDoc(productDocRef);
+    if (productSnapshot.exists()) {
+      const currentQuantity = productSnapshot.data().quantity;
+
+      // Increment the quantity
+      await updateDoc(productDocRef, {
+        quantity: currentQuantity + 1,
+      });
+      console.log("Product quantity incremented");
+    }
+  } catch (error) {
+    console.error("Error incrementing product quantity: ", error);
+  }
+};
+
+// Decrement product quantity (and remove if quantity becomes 0)
+export const decrementProductQuantity = async (productId) => {
+  try {
+    const productDocRef = doc(db, "products", productId);
+
+    // Get the current quantity
+    const productSnapshot = await getDoc(productDocRef);
+    if (productSnapshot.exists()) {
+      const currentQuantity = productSnapshot.data().quantity;
+
+      if (currentQuantity > 1) {
+        // Decrement the quantity
+        await updateDoc(productDocRef, {
+          quantity: currentQuantity - 1,
+        });
+        console.log("Product quantity decremented");
+      } else {
+        // If quantity is 1, delete the product from the collection
+        await deleteDoc(productDocRef);
+        console.log("Product deleted as quantity became zero");
+      }
+    }
+  } catch (error) {
+    console.error("Error decrementing product quantity: ", error);
   }
 };

@@ -6,13 +6,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { auth , db} from "@/config/firebase";
-import {
-  doc,
-  setDoc,
-  getDoc,
-  
-} from "firebase/firestore";
+import { auth, db } from "@/config/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 

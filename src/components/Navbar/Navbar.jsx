@@ -5,7 +5,6 @@ import { UserAuth } from '@/contexts/auth_context';
 
 const Navbar = () => {
   const { user, GoogleSignIn, SignOut, loadingUser } = UserAuth();
-  // const [loading, setLoading] = useState(true);
 
   const handleSignIn = async () => {
     try {
@@ -25,22 +24,24 @@ const Navbar = () => {
 
   return (
     <div className='nav'>
-      <div className='nav-logo'>
+      <div className='nav-logo font-sans mx-1'>
         Pantry-Tracker
       </div>
-      <div>
-        <input
-          type="text"
-          placeholder='Search'
-          className={"border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm mr-3"}
-        />
+      <div className='flex'>
+        {loadingUser ? null : user ? (
+          <input
+            type="text"
+            placeholder="Search"
+            className="hidden sm:block border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm mr-3 text-sm"
+          />
+        ) : null}
 
         {loadingUser ? (null) : user ? (
           <button onClick={handleSignOut} className="bg-red-500 text-white px-4 py-2 rounded">
             Sign Out
           </button>
         ) : (
-          <button onClick={handleSignIn} className="bg-blue-500 text-white px-4 py-2 rounded">
+          <button onClick={handleSignIn} className="bg-blue-500 text-white px-4 py-2 text-sm rounded">
             Sign In with Google
           </button>
         )}
