@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 
 // Add a product to the "products" collection
-export const addProduct = async ({ name, quantity, expiryDate, userId }) => {
+export const addProduct = async ({ name, quantity, expiryDate, userId , downloadUrl}) => {
   console.log("adding");
   try {
     // Convert quantity to an integer before adding it to the database
@@ -24,8 +24,9 @@ export const addProduct = async ({ name, quantity, expiryDate, userId }) => {
 
     const docRef = await addDoc(collection(db, "products"), {
       name,
-      quantity: parsedQuantity, // Storing the parsed quantity
+      quantity: parsedQuantity, 
       expiryDate,
+      downloadUrl,
       userId,
     });
 

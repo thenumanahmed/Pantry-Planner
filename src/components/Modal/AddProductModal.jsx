@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import AvatarUploader from './AvaTarUploader';
 
-const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quantity, setQuantity, expiryDate, setExpiryDate, }) => {
+const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quantity, setQuantity, expiryDate, setExpiryDate, selectedImage, setSelectedImage, 
+    // labelImage
+    getAISuggestion
+ }) => {
     const [errors, setErrors] = useState({});
 
     // Get today's date in the format 'YYYY-MM-DD'
@@ -27,12 +31,7 @@ const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quan
         }
         // Default quantity to 1 if it's empty
         const finalQuantity = quantity || 1;
-
-        // Process form data
-        // console.log('Submitting:', { name, quantity: finalQuantity, expiryDate });
-        handleAddProduct()
-        // Here you can call the function to add the product
-
+        handleAddProduct();
         // Close the modal
         closeAddItemModal();
     };
@@ -50,6 +49,8 @@ const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quan
 
                 {/* Form */}
                 <form className='mt-4' onSubmit={handleSubmit}>
+                    <AvatarUploader selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+                    <div onClick={getAISuggestion}>label the image</div>
                     <div className='mb-4'>
                         <label className='block text-sm font-medium text-gray-700'>
                             Item Name
