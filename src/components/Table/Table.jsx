@@ -41,6 +41,7 @@ const Table = ({
                     <table className='w-full'>
                         <thead className='bg-slate-200 border-b-2 border-slate-800'>
                             <tr>
+                                <th className='p-3 text-sm font-semibold tracking-wide text-left'>Image</th> {/* New column for image */}
                                 <th className='w-2/3 p-3 text-sm font-semibold tracking-wide text-left flex-grow'>Name</th>
                                 <th className='w-4/12 p-3 text-sm font-semibold tracking-wide text-left'>Quantity</th>
                                 <th className='w-4/12 p-3 text-sm font-semibold tracking-wide text-left'>Expiry Date</th>
@@ -51,6 +52,15 @@ const Table = ({
                             {filteredProducts.length > 0 ? (
                                 filteredProducts.map((prod) => (
                                     <tr key={prod.id} className='bg-white odd:bg-gray-200'>
+                                        <td className="whitespace-nowrap p-3 text-sm text-slate-800 relative"> {/* Use relative positioning */}
+                                            <div className="relative group">
+                                                <img
+                                                    src={prod.downloadUrl}  
+                                                    alt={"img"}
+                                                    // className="h-5 transition-all duration-300 group-hover:h-36 group-hover:absolute group-hover:z-50 group-hover:-translate-y-full"  // Default height 20px, hover 150px above table
+                                                />
+                                            </div>
+                                        </td>
                                         <td className="whitespace-nowrap p-3 text-sm text-slate-800 font-bold">{prod.name}</td>
                                         <td className="whitespace-nowrap p-3 text-sm text-center text-slate-800">
                                             <div className='flex'>
@@ -74,7 +84,7 @@ const Table = ({
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="text-center p-4 text-sm text-slate-800">
+                                    <td colSpan="5" className="text-center p-4 text-sm text-slate-800">
                                         No products match your search.
                                     </td>
                                 </tr>

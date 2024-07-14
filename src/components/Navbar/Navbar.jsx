@@ -2,7 +2,7 @@
 import React from 'react';
 import './Navbar.css';
 import { UserAuth } from '@/contexts/auth_context';
-import SearchWidget from '@/components/SearchWidget';
+import SearchWidget from '@/components/SearchWidget/SearchWidget';
 
 const Navbar = () => {
   const { user, GoogleSignIn, SignOut, loadingUser } = UserAuth();

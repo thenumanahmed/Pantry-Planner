@@ -16,7 +16,7 @@ import Grid from "@/components/Grid/Grid";
 import AddItemModal from "@/components/Modal/AddProductModal";
 import AiSuggestionModal from "@/components/Modal/AiSuggestionodal";
 import EditItemModal from "@/components/Modal/EditProductModal";
-import SearchWidget from "@/components/SearchWidget";
+import SearchWidget from "@/components/SearchWidget/SearchWidget";
 // import openAIClient  from "@/config/openai";
 
 export default function Home() {
@@ -115,6 +115,7 @@ export default function Home() {
       setNewProductName("");
       setNewQuantity("");
       setNewExpiryDate("");
+      setSelectedImage(null);
 
       // Fetch updated products
       const updatedProducts = await getProducts(user.uid);

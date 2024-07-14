@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import AvatarUploader from './AvaTarUploader';
 
-const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quantity, setQuantity, expiryDate, setExpiryDate, selectedImage, setSelectedImage, 
+const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quantity, setQuantity, expiryDate, setExpiryDate, selectedImage, setSelectedImage,
     // labelImage
     getAISuggestion
- }) => {
+}) => {
     const [errors, setErrors] = useState({});
 
     // Get today's date in the format 'YYYY-MM-DD'
@@ -50,8 +50,7 @@ const AddItemModal = ({ closeAddItemModal, handleAddProduct, name, setName, quan
                 {/* Form */}
                 <form className='mt-4' onSubmit={handleSubmit}>
                     <AvatarUploader selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-                    <div onClick={getAISuggestion}>label the image</div>
-                    <div className='mb-4'>
+                    <div className='mb-4 pt-2'>
                         <label className='block text-sm font-medium text-gray-700'>
                             Item Name
                         </label>
